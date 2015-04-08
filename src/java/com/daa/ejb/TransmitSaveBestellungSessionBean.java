@@ -5,6 +5,7 @@
  */
 package com.daa.ejb;
 
+import com.daa.model.BestellWrapper;
 import com.daa.model.Bestellung;
 import com.daa.model.Gericht;
 import com.daa.model.Kunde;
@@ -73,17 +74,13 @@ public class TransmitSaveBestellungSessionBean extends GConnection implements Tr
     }
 
     @Override
-    public boolean storeEjb(Bestellung bestellung) {
+    public boolean storeEjb(BestellWrapper wrapperBestellung) {
+        Bestellung bestellung = wrapperBestellung.getBestellung();
+        Kunde kunde = wrapperBestellung.getKunde();
+       List<Gericht> orderedGerichte = wrapperBestellung.getGerichte();
         boolean success = false;
-        Kunde tempKunde = storeKunde(bestellung.getKeyKunde());
-        System.out.println("LastKundenID: " + tempKunde.getLastId());
-        bestellung.setKeyKunde(tempKunde);
-        System.out.println("lastKundeIdSetIn bestellung ? " + bestellung.getKeyKunde().getLastId());
-        if (tempKunde != null) {
-            success = true;
-        }
         /*
-        Need to know, if bestellung Objekt is perfectly filled
+            Need to know, if bestellung Objekt is perfectly filled
          */
         System.out.println("IP-Address set ? " + bestellung.getIpAddress());
         System.out.println("Session-ID set ? " + bestellung.getSessionId());
@@ -92,61 +89,47 @@ public class TransmitSaveBestellungSessionBean extends GConnection implements Tr
         System.out.println("IsOrdered ? " + bestellung.isIsOrdered());
         System.out.println("IsPayed ? " + bestellung.isIsPayed());
         System.out.println("Kunde Object ? " + bestellung.getKeyKunde());
-        return success = storeBestellung(bestellung);
-    }
-
-    private Kunde storeKunde(Kunde currentKunde) {
-        boolean success = false;
         try {
-            if (conn == null) {
-                return null;
-            }
+            /*
+            store Kunde-Object FIRSTand get the kundeID back
+             */
             pStmt = conn.prepareStatement("INSERT INTO Kunde (username, vorname, "
                     + "nachname, strasse, hausnr, PLZ, Ort, firstEntryDate, lastEntryDate) "
                     + "VALUES(?,?,?,?,?,?,?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)");
-            pStmt.setString(1, currentKunde.getUsername().trim());
-            pStmt.setString(2, currentKunde.getVorname().trim());
-            pStmt.setString(3, currentKunde.getNachname().trim());
-            pStmt.setString(4, currentKunde.getStrasse().trim());
-            pStmt.setString(5, currentKunde.getHausnr().trim());
-            pStmt.setString(6, currentKunde.getPlz().trim());
-            pStmt.setString(7, currentKunde.getOrt().trim());
+            pStmt.setString(1, bestellung.getKeyKunde().getUsername().trim());
+            pStmt.setString(2, bestellung.getKeyKunde().getVorname().trim());
+            pStmt.setString(3, bestellung.getKeyKunde().getNachname().trim());
+            pStmt.setString(4, bestellung.getKeyKunde().getStrasse().trim());
+            pStmt.setString(5, bestellung.getKeyKunde().getHausnr().trim());
+            pStmt.setString(6, bestellung.getKeyKunde().getPlz().trim());
+            pStmt.setString(7, bestellung.getKeyKunde().getOrt().trim());
             int rows = pStmt.executeUpdate();
             conn.commit();
             success = (rows == 1);
-            // storeKunde the last_insert_id of the Kunde object in lastId, 
+            /*
+            store  the last_insert_id of the Kunde object in lastId, and later 
+            in the Kunde Object of bestellung
+             */
             rs = stmt.executeQuery("SELECT LAST_INSERT_ID()");
             if (rs.next()) {
-                currentKunde.setLastId(rs.getInt(1));
-
+                bestellung.getKeyKunde().setLastId(rs.getInt(1));
             } else {
+                success = false;
                 // throw an exception from here
             }
-
-        } catch (SQLException ex) {
-//            org.jboss.logging.Logger.getLogger(Kunde.class.getName()).log(org.jboss.logging.Logger.Level.FATAL, null, ex);
-            success = false;
-        } finally {
-            try {
-                stmt.close();
-            } catch (SQLException ex) {
-                java.util.logging.Logger.getLogger(Kunde.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            try {
-                conn.close();
-            } catch (SQLException ex) {
-                java.util.logging.Logger.getLogger(Kunde.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        return currentKunde;
-    }
-
-    public boolean storeBestellung(Bestellung bestellung) {
-        boolean success = false;
-        try {
-            if (conn == null) {
-                return success;
-            }
+            /*
+                is the lastKundeId set ?
+             */
+            System.out.println("lastKundeIdSetIn bestellung before Setting? "
+                    + bestellung.getKeyKunde().getLastId());
+            /*
+                From here on, store the Bestellung
+             */
+//            try {
+//                init();
+//                if (conn == null) {
+//                    return success;
+//                }
             pStmt = conn.prepareStatement("INSERT INTO Bestellung (keyKunde, ipAddress, "
                     + "orderDate, sessionId, isOrdered, totalPay) "
                     + "VALUES(?,?,CURRENT_TIMESTAMP,?,?,?)");
@@ -155,14 +138,15 @@ public class TransmitSaveBestellungSessionBean extends GConnection implements Tr
             pStmt.setString(3, bestellung.getSessionId().trim());
             pStmt.setBoolean(4, bestellung.isIsOrdered());
             pStmt.setBigDecimal(5, bestellung.getTotalPay());
-            int rows = pStmt.executeUpdate();
+            rows = pStmt.executeUpdate();
             conn.commit();
             success = (rows == 1);
-            // store the last_insert_id of the Bestellung object in lastId, 
+            // store the last_insert_id of the Bestellung object in lastId,
             rs = stmt.executeQuery("SELECT LAST_INSERT_ID()");
             if (rs.next()) {
                 bestellung.setIdOrder(rs.getInt(1));
             } else {
+                success = false;
                 // throw an exception from here
             }
             /**
@@ -180,31 +164,20 @@ public class TransmitSaveBestellungSessionBean extends GConnection implements Tr
              */
             pStmt.setInt(1, bestellung.getIdOrder());
 
-//            for (Gericht temp : bestellung. {
-//                pStmt.setInt(2, temp.getGerichtId());
-//                pStmt.setInt(3, temp.getAmount());
-//                rows = pStmt.executeUpdate();
-//                conn.commit();
-//                success = (rows == 1);
-//            }
+            for (Gericht temp : orderedGerichte ) {
+                pStmt.setInt(2, temp.getGerichtId());
+                pStmt.setInt(3, temp.getAmount());
+                rows = pStmt.executeUpdate();
+                conn.commit();
+                success = (rows == 1);
+            }
             return success;
-
+//         
         } catch (SQLException ex) {
-//            org.jboss.logging.Logger.getLogger(TransmitSaveBestellungSessionBean.class.getName()).log(org.jboss.logging.Logger.Level.FATAL, null, ex);
-            success = false;
-
-        } finally {
-            try {
-                stmt.close();
-            } catch (SQLException ex) {
-                java.util.logging.Logger.getLogger(Kunde.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            try {
-                conn.close();
-            } catch (SQLException ex) {
-                java.util.logging.Logger.getLogger(Kunde.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            Logger.getLogger(TransmitSaveBestellungSessionBean.class.getName()).log(Level.SEVERE, null, ex);
         }
         return success;
-    }
-}
+
+    } // end method
+} // end  class
+
