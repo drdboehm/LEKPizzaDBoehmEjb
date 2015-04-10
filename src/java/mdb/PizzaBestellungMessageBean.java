@@ -41,7 +41,7 @@ public class PizzaBestellungMessageBean implements MessageListener {
     public void onMessage(Message message) {
         try {
             ObjectMessage myMsg = (ObjectMessage) message;
-            System.out.println("ObjectMessage auf Queue erkannt!" + myMsg.toString());
+//            System.out.println("ObjectMessage auf Queue erkannt!" + myMsg.toString());
             BestellWrapper b = (BestellWrapper) myMsg.getObject();
             System.out.println("BestellWrapper auf Queue erkannt!" + b.toString());
             Kunde kunde = b.getKunde();
@@ -50,7 +50,7 @@ public class PizzaBestellungMessageBean implements MessageListener {
             System.out.println("Kunde auf Queue erkannt!" + kunde.toString());
             System.out.println("Bestellung auf Queue erkannt!" + bestellung.toString());
             for (Gericht g : gerichte) {
-                System.out.println(g.getBezeichnung() + " " + g.getAmount());
+//                System.out.println(g.getBezeichnung() + " " + g.getAmount());
             }
             
             transmitSaveBestellungSessionBean.storeEjb(b);
