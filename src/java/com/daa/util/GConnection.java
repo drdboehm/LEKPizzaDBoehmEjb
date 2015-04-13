@@ -27,7 +27,7 @@ public class GConnection {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
             //Get a connection
             Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/dbpizza", 
-                    "root", "7_Zwerge");
+                    "root", "5bA0PoKa");
             conn.setAutoCommit(false);
             return conn;
         } catch (SQLException ex) {
