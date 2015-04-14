@@ -10,7 +10,7 @@ import com.daa.model.Bestellung;
 import com.daa.model.Gericht;
 import com.daa.model.Kunde;
 import com.daa.model.Orderposition;
-import com.daa.util.GConnection;
+//import com.daa.util.GConnection;
 import java.util.Date;
 import java.util.List;
 import javax.annotation.PostConstruct;
@@ -25,7 +25,7 @@ import javax.persistence.PersistenceUnit;
  * @author teilnehmer
  */
 @Stateless
-public class TransmitSaveBestellungSessionBean extends GConnection implements TransmitSaveBestellungSessionBeanRemote {
+public class TransmitSaveBestellungSessionBean implements TransmitSaveBestellungSessionBeanRemote {
 
     @PersistenceUnit(unitName = "PizzaService-ejbPU")
     private EntityManagerFactory emf;//=Persistence.createEntityManagerFactory("PizzaService-ejbPU");
@@ -59,10 +59,11 @@ public class TransmitSaveBestellungSessionBean extends GConnection implements Tr
         Kunde kunde = bw.getKunde();
         List<Gericht> orderedGerichte = bw.getGerichte();
         /*
-         Set timespamp fields - necessary ?
+         Set timespamp fields - later distinguish if Kunde is present, then 
+        leave firstEntryDate as is
          */
-//        kunde.setFirstEntryDate(new Date());
-//        kunde.setLastEntryDate(new Date());
+        kunde.setFirstEntryDate(new Date());
+        kunde.setLastEntryDate(new Date());
         boolean success = true;
         EntityManager em = emf.createEntityManager();
 

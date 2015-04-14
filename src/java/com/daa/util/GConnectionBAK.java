@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  *
  * @author Schulung
  */
-public class GConnection {
+public class GConnectionBAK {
 
     /**
      * Holt eine Datenbankverbindung.
@@ -32,16 +32,16 @@ public class GConnection {
             return conn;
         } catch (SQLException ex) {
             System.out.println(ex.getStackTrace());
-              Logger.getLogger(GConnection.class.getName()).log(Level.SEVERE, null, ex);
+              Logger.getLogger(GConnectionBAK.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
             //Ausgaben zum Loggen
-              Logger.getLogger(GConnection.class.getName()).log(Level.SEVERE, null, ex);
+              Logger.getLogger(GConnectionBAK.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
             //Ausgaben zum Loggen
-              Logger.getLogger(GConnection.class.getName()).log(Level.SEVERE, null, ex);
+              Logger.getLogger(GConnectionBAK.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
             //Ausgaben zum Loggen
-              Logger.getLogger(GConnection.class.getName()).log(Level.SEVERE, null, ex);
+              Logger.getLogger(GConnectionBAK.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
